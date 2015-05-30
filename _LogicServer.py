@@ -1,6 +1,4 @@
 
-import struct
-
 from snjdck import *
 
 import Config
@@ -13,5 +11,5 @@ class LogicLinker(Linker):
 
 
 clientMgr = ClientManager()
-clientMgr.regLinker(LogicLinker, Config.CENTER_IP, Config.CENTER_PORT, Config.ID_LOGIC)
+clientMgr.regLinker(LogicLinker, Config.ID_LOGIC)
 clientMgr.run()

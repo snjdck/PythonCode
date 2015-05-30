@@ -7,7 +7,7 @@ serviceDict = {}
 
 class CenterServerClient(Client):
 	def __init__(self, clientMgr, sock):
-		Client.__init__(self, clientMgr, sock)
+		super().__init__(clientMgr, sock)
 		self.isNameSet = False
 
 	def handlePacket(self, packet):
