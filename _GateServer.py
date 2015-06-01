@@ -2,16 +2,25 @@
 from snjdck import *
 
 import Config
+import MsgDef
 
 class GateClient(Client):
+	def onConnected(self):
+		self.linker = self.getLinker(Config.ID_GATE)
+		self.linker.sendMsg(Config.ID_LOGIC, self.fileno(), MsgDef.ID_CONNECT)
+
+	def onClose(self):
+		self.linker.sendMsg(Config.ID_LOGIC, self.fileno(), MsgDef.ID_DISCONNECT)
+		super().onClose()
+
 	def handlePacket(self, packet):
-		linker = self.getLinker(Config.ID_GATE)
-		linker.sendTo(Config.ID_LOGIC, pack_uint(self.fileno()) + packet)
+		self.linker.sendTo(Config.ID_LOGIC, self.fileno(), packet)
 
 class GateLinker(Linker):
-	def handlePacket(self, packet):
-		fileno = read_uint(packet)
-		self.getClient(fileno).send(packet[4:])
+	def handlePacket(self, buffer):
+		fileno = read_uint(buffer)
+		#packet = Packet(buffer[4:])
+		self.getClient(fileno).send(buffer[4:])
 
 
 clientMgr = ClientManager()

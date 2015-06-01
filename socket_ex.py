@@ -23,6 +23,7 @@ class ServerSocket(Socket):
 
 
 from struct_ex import read_ushort, pack_ushort
+headLen = 2
 
 class ClientSocket(Socket):
 	def __init__(self, sock):
@@ -32,8 +33,11 @@ class ClientSocket(Socket):
 		self.isSending = False
 		self.packetsRecv = []
 
+	def onConnected(self):
+		pass
+
 	def _send(self, data, context):
-		self.sendBuff += pack_ushort(len(data)) + data
+		self.sendBuff += pack_ushort(headLen+len(data)) + data
 		if not self.isSending:
 			context.modifyWrite(self)
 			self.isSending = True
@@ -67,14 +71,13 @@ class ClientSocket(Socket):
 
 		self.recvBuff += data
 
-		headLen = 2
 		end = len(self.recvBuff)
 		begin = 0
 
 		while True:
 			if end - begin < headLen:
 				break
-			packetLen = read_ushort(self.recvBuff, begin) + headLen
+			packetLen = read_ushort(self.recvBuff, begin)
 			if end - begin < packetLen:
 				break;
 			packet = self.recvBuff[begin+headLen:begin+packetLen]

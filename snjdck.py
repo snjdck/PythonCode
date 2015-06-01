@@ -13,9 +13,9 @@ class ClientManager(Selector):
 		self.linkerDict = {}
 
 	def regLinker(self, factory, serviceId):
-		linker = factory(self)
+		linker = factory(self, serviceId)
 		self.register(linker)
-		linker.send(pack_ushort(serviceId))
+		linker.onConnected()
 		self.linkerDict[serviceId] = linker
 
 	def getLinker(self, serviceId):
@@ -39,8 +39,8 @@ class ClientManager(Selector):
 
 class Client(ClientSocket):
 	def __init__(self, clientMgr, sock):
-		super().__init__(sock)
 		self.clientMgr = clientMgr
+		super().__init__(sock)
 
 	def close(self):
 		print("sock close")
@@ -58,8 +58,11 @@ class Client(ClientSocket):
 	def send(self, data):
 		self._send(data, self.clientMgr)
 
-	def sendTo(self, serviceId, data):
-		self.send(pack_ushort(serviceId) + data)
+	def sendTo(self, serviceId, who, data):
+		self.send(pack_ushort(serviceId) + pack_uint(who) + data)
+
+	def sendMsg(self, serviceId, who, msgId, msgData=None):
+		self.sendTo(serviceId, who, Packet.encode(msgId, msgData))
 
 	def onClose(self):
 		self.clientMgr.removeClient(self)
@@ -74,12 +77,38 @@ class Server(ServerSocket):
 	def onAccept(self, sock, context):
 		client = self.clientFactory(context, sock)
 		context.addClient(client)
+		client.onConnected()
 
 
 class Linker(Client):
-	def __init__(self, clientMgr):
+	def __init__(self, clientMgr, serviceId):
 		sock = create_client(Config.CENTER_IP, Config.CENTER_PORT)
 		super().__init__(clientMgr, sock)
+		self.serviceId = serviceId
+
+	def onConnected(self):
+		self.send(pack_ushort(self.serviceId))
 
 	def onClose(self):
 		self.clientMgr.unregister(self)
+
+
+import json
+
+class Packet:
+	@staticmethod
+	def encode(msgId, msgData):
+		buffer = pack_ushort(msgId)
+		if msgData:
+			buffer += json.dumps(msgData, separators=(',',':')).encode()
+		return buffer
+
+	def __init__(self, buffer):
+		self.msgId = read_ushort(buffer)
+		self.msgData = None
+		if len(buffer) > 2:
+			self.msgData = json.loads(buffer[2:].decode())
+
+	def tobytes(self):
+		return Packet.encode(self.msgId, self.msgData)
+
