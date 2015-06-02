@@ -58,11 +58,11 @@ class Client(ClientSocket):
 	def send(self, data):
 		self._send(data, self.clientMgr)
 
-	def sendTo(self, serviceId, who, data):
-		self.send(pack_ushort(serviceId) + pack_uint(who) + data)
+	def sendTo(self, who, data):
+		self.send(pack_uint(who) + data)
 
-	def sendMsg(self, serviceId, who, msgId, msgData=None):
-		self.sendTo(serviceId, who, Packet.encode(msgId, msgData))
+	def sendMsg(self, who, msgId, msgData=None):
+		self.sendTo(who, Packet.encode(msgId, msgData))
 
 	def onClose(self):
 		self.clientMgr.removeClient(self)

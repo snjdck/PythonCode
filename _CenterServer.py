@@ -15,11 +15,14 @@ class CenterServerClient(Client):
 			serviceId = read_ushort(packet)
 			serviceDict[serviceId] = self
 			self.isNameSet = True
+			self.serviceId = serviceId
 			return
 
-		serviceId = read_ushort(packet)
-		service = serviceDict[serviceId]
-		service.send(packet[2:])
+		for serviceId in serviceDict:
+			if serviceId == self.serviceId:
+				continue
+			service = serviceDict[serviceId]
+			service.send(packet)
 
 
 clientMgr = ClientManager()

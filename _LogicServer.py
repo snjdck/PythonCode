@@ -39,7 +39,7 @@ class LogicLinker(Linker):
 	@bindMsg(MsgDef.ID_CHAT)
 	def _onChat(self, fileno, packet):
 		for client_fileno in clientDict:
-			self.sendTo(Config.ID_GATE, client_fileno, packet.tobytes())
+			self.sendTo(client_fileno, packet.tobytes())
 
 clientMgr = ClientManager()
 clientMgr.regLinker(LogicLinker, Config.ID_LOGIC)

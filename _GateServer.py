@@ -7,14 +7,14 @@ import MsgDef
 class GateClient(Client):
 	def onConnected(self):
 		self.linker = self.getLinker(Config.ID_GATE)
-		self.linker.sendMsg(Config.ID_LOGIC, self.fileno(), MsgDef.ID_CONNECT)
+		self.linker.sendMsg(self.fileno(), MsgDef.ID_CONNECT)
 
 	def onClose(self):
-		self.linker.sendMsg(Config.ID_LOGIC, self.fileno(), MsgDef.ID_DISCONNECT)
+		self.linker.sendMsg(self.fileno(), MsgDef.ID_DISCONNECT)
 		super().onClose()
 
 	def handlePacket(self, packet):
-		self.linker.sendTo(Config.ID_LOGIC, self.fileno(), packet)
+		self.linker.sendTo(self.fileno(), packet)
 
 class GateLinker(Linker):
 	def handlePacket(self, buffer):
