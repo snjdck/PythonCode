@@ -19,8 +19,12 @@ class GateClient(Client):
 class GateLinker(Linker):
 	def handlePacket(self, buffer):
 		fileno = read_uint(buffer)
-		#packet = Packet(buffer[4:])
-		self.getClient(fileno).send(buffer[4:])
+		packet = Packet(buffer[4:])
+		client = self.getClient(fileno)
+		if packet.msgId == MsgDef.ID_CLOSE:
+			client.close()
+			return
+		client.send(buffer[4:])
 
 
 clientMgr = ClientManager()

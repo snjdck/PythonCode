@@ -34,7 +34,6 @@ class ClientManager(Selector):
 	def removeClient(self, client):
 		self.unregister(client)
 		del self.clientDict[client.fileno()]
-		client.close()
 
 
 class Client(ClientSocket):
@@ -43,11 +42,8 @@ class Client(ClientSocket):
 		super().__init__(sock)
 
 	def close(self):
-		print("sock close")
+		self.onClose()
 		self.sock.close()
-		self.sock = None
-		self.recvBuff = None
-		self.sendBuff = None
 
 	def getClient(self, fileno):
 		return self.clientMgr.getClient(fileno)

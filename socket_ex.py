@@ -94,4 +94,5 @@ class ClientSocket(Socket):
 		self.handlePackets()
 
 	def onClose(self):
-		pass
+		self.recvBuff = None
+		self.sendBuff = None
